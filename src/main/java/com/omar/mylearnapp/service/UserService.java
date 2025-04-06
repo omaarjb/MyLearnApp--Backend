@@ -13,7 +13,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public void createUser(String clerkId, String email, String role, String firstName, String lastName) {
-        // Check if user already exists
+
         if (!userRepository.existsByClerkId(clerkId)) {
             User user = new User();
             user.setClerkId(clerkId);
@@ -21,7 +21,7 @@ public class UserService {
             user.setRole(role);
             user.setFirstName(firstName);
             user.setLastName(lastName);
-            userRepository.save(user);  // Persist the user to the database
+            userRepository.save(user);
         }
 
     }

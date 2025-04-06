@@ -2,6 +2,8 @@ package com.omar.mylearnapp.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -13,6 +15,9 @@ public class User {
     private String firstName;
     private String lastName;
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<QuizAttempt> quizAttempts;
 
     public User() {
     }
