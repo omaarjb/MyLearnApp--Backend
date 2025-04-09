@@ -17,6 +17,7 @@ public class Quiz {
     private String icon;
     private String color;
     private String category;
+    private int timeLimit;
 
     @ManyToOne
     @JoinColumn(name = "topic_id")
@@ -31,13 +32,14 @@ public class Quiz {
     public Quiz() {
     }
 
-    public Quiz(String titile, String description, String difficulty, String icon, String color, String category, Topic topic) {
-        this.title = titile;
+    public Quiz(String title, String description, String difficulty, String icon, String color, String category,int timeLimit, Topic topic) {
+        this.title = title;
         this.description = description;
         this.difficulty = difficulty;
         this.icon = icon;
         this.color = color;
         this.category = category;
+        this.timeLimit = timeLimit;
         this.topic = topic;
     }
 
@@ -53,8 +55,8 @@ public class Quiz {
         return title;
     }
 
-    public void setTitle(String titile) {
-        this.title = titile;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -95,6 +97,14 @@ public class Quiz {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getTimeLimit() {
+        return timeLimit;
+    }
+
+    public void setTimeLimit(Integer timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
     public Topic getTopic() {

@@ -15,6 +15,7 @@ public class QuizResponse {
     private String difficulty;
     private String icon;
     private String color;
+    private int timeLimit;
     private List<QuestionResponse> questions;
 
     public static QuizResponse fromQuiz(Quiz quiz) {
@@ -26,6 +27,7 @@ public class QuizResponse {
         response.setDifficulty(quiz.getDifficulty());
         response.setIcon(quiz.getIcon());
         response.setColor(quiz.getColor());
+        response.setTimeLimit(quiz.getTimeLimit());
 
         if (quiz.getQuestions() != null) {
             response.setQuestions(quiz.getQuestions().stream()
@@ -99,6 +101,14 @@ public class QuizResponse {
 
     public void setQuestions(List<QuestionResponse> questions) {
         this.questions = questions;
+    }
+
+    public Integer getTimeLimit() {
+        return timeLimit;
+    }
+
+    public void setTimeLimit(Integer timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
     public static class QuestionResponse {
