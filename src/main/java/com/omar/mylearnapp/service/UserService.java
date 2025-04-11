@@ -2,6 +2,7 @@ package com.omar.mylearnapp.service;
 
 import com.omar.mylearnapp.model.User;
 import com.omar.mylearnapp.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,4 +37,8 @@ public class UserService {
         return false;
     }
 
+    @Transactional
+    public void deleteUserByClerkId(String clerkId) {
+        userRepository.deleteByClerkId(clerkId);
+    }
 }

@@ -68,6 +68,10 @@ public class QuizService {
         return quizRepository.findById(savedQuiz.getId()).orElse(savedQuiz);
     }
 
+    public List<Quiz> getAllQuizzes() {
+        return quizRepository.findAll();
+    }
+
     public List<Quiz> getQuizzesByCategory(String category) {
         return quizRepository.findByCategory(category);
     }
