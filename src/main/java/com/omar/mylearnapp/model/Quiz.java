@@ -23,6 +23,11 @@ public class Quiz {
     @JoinColumn(name = "topic_id")
     private Topic topic;
 
+    @ManyToOne
+    @JoinColumn(name = "professor_id")
+    private User professor;
+
+
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     private List<Question> questions;
 
@@ -32,7 +37,7 @@ public class Quiz {
     public Quiz() {
     }
 
-    public Quiz(String title, String description, String difficulty, String icon, String color, String category,int timeLimit, Topic topic) {
+    public Quiz(String title, String description, String difficulty, String icon, String color, String category,int timeLimit, Topic topic, User professor) {
         this.title = title;
         this.description = description;
         this.difficulty = difficulty;
@@ -41,6 +46,7 @@ public class Quiz {
         this.category = category;
         this.timeLimit = timeLimit;
         this.topic = topic;
+        this.professor = professor;
     }
 
     public Long getId() {
@@ -129,5 +135,12 @@ public class Quiz {
 
     public void setAttempts(List<QuizAttempt> attempts) {
         this.attempts = attempts;
+    }
+
+    public User getProfessor() {
+        return professor;
+    }
+    public void setProfessor(User professor) {
+        this.professor = professor;
     }
 }

@@ -3,6 +3,7 @@ package com.omar.mylearnapp.model.response;
 import com.omar.mylearnapp.model.Option;
 import com.omar.mylearnapp.model.Question;
 import com.omar.mylearnapp.model.Quiz;
+import com.omar.mylearnapp.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ public class QuizResponse {
     private String color;
     private int timeLimit;
     private List<QuestionResponse> questions;
+    private ProfessorInfo professor;
 
     public static QuizResponse fromQuiz(Quiz quiz) {
         QuizResponse response = new QuizResponse();
@@ -33,6 +35,15 @@ public class QuizResponse {
             response.setQuestions(quiz.getQuestions().stream()
                     .map(QuestionResponse::fromQuestion)
                     .collect(Collectors.toList()));
+        }
+
+        if (quiz.getProfessor() != null) {
+            User prof = quiz.getProfessor();
+            ProfessorInfo professorInfo = new ProfessorInfo();
+            professorInfo.setId(prof.getId());
+            professorInfo.setName(prof.getFirstName() + " " + prof.getLastName());
+            professorInfo.setEmail(prof.getEmail());
+            response.setProfessor(professorInfo);
         }
 
         return response;
@@ -109,6 +120,58 @@ public class QuizResponse {
 
     public void setTimeLimit(Integer timeLimit) {
         this.timeLimit = timeLimit;
+    }
+
+    public ProfessorInfo
+    getProfessor() {
+        return professor;
+    }
+
+    public void
+    setProfessor(ProfessorInfo professor) {
+        this.professor = professor;
+    }
+
+    public static class
+    ProfessorInfo
+    {
+        private Long
+                id;
+        private String
+                name;
+        private String
+                email;
+
+        // Getters and setters
+        public Long
+        getId() {
+        return id;
+    }
+
+        public void
+        setId(Long id) {
+        this.id = id;
+    }
+
+        public String
+        getName() {
+        return name;
+    }
+
+        public void
+        setName(String name) {
+        this.name = name;
+    }
+
+        public String
+        getEmail() {
+        return email;
+    }
+
+        public void
+        setEmail(String email) {
+        this.email = email;
+    }
     }
 
     public static class QuestionResponse {

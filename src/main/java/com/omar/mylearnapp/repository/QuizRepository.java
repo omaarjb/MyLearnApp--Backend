@@ -1,6 +1,7 @@
 package com.omar.mylearnapp.repository;
 
 import com.omar.mylearnapp.model.Quiz;
+import com.omar.mylearnapp.model.Topic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,6 +13,7 @@ public interface QuizRepository extends JpaRepository<Quiz,Long> {
     List<Quiz> findByDifficulty(String difficulty);
     List<Quiz> findByCategory(String category);
     List<Quiz> findByTopicName(String topicName);
+    List<Quiz> findByProfessorId(Long professorId);
 
     @Query("SELECT COUNT(q) FROM Quiz q")
     long countQuizzes();

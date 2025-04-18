@@ -1,5 +1,6 @@
 package com.omar.mylearnapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -16,9 +17,11 @@ public class Option {
 
     @ManyToOne
     @JoinColumn(name = "question_id")
+    @JsonIgnore
     private Question question;
 
     @OneToMany(mappedBy = "selectedOption")
+    @JsonIgnore
     private List<Response> responses;
 
     public Option() {
