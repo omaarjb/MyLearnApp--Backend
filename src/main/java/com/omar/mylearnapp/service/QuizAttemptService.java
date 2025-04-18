@@ -34,9 +34,9 @@ public class QuizAttemptService {
     private QuestionRepository questionRepository;
 
     @Transactional
-    public QuizAttempt startQuizAttempt(Long userId,Long quizId){
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new RuntimeException("User not found with id: " +userId));
+    public QuizAttempt startQuizAttempt(String clerkId,Long quizId){
+        User user = userRepository.findByClerkId(clerkId)
+                .orElseThrow(()->new RuntimeException("User not found with clerk id: " +clerkId));
         Quiz quiz=quizRepository.findById(quizId)
                 .orElseThrow(()->new RuntimeException("Quiz not found with id: " +quizId));
         QuizAttempt attempt=new QuizAttempt();
@@ -139,18 +139,18 @@ public class QuizAttemptService {
 
 
         // Attempts dyal user
-        public List<QuizAttempt> getUserAttempts(Long userId){
-            User user = userRepository.findById(userId)
-                    .orElseThrow(()->new RuntimeException("User not found with id: " +userId));
-            return quizAttemptRepository.findByUserId(userId);
+        public List<QuizAttempt> getUserAttempts(String clerkId){
+            User user = userRepository.findByClerkId(clerkId)
+                    .orElseThrow(()->new RuntimeException("User not found with id: " +clerkId));
+            return quizAttemptRepository.findByUserId(user.getId());
         }
 
 
         // Recent attempts dyal user
-        public List<QuizAttempt> getRecentUserAttempts(Long userId){
-            User user = userRepository.findById(userId)
-                    .orElseThrow(()->new RuntimeException("User not found with id: " +userId));
-            return quizAttemptRepository.findRecentAttemptsByUserId(userId);
+        public List<QuizAttempt> getRecentUserAttempts(String clerkId){
+            User user = userRepository.findByClerkId(clerkId)
+                    .orElseThrow(()->new RuntimeException("User not found with id: " +clerkId));
+            return quizAttemptRepository.findRecentAttemptsByUserId(user.getId());
         }
 
 

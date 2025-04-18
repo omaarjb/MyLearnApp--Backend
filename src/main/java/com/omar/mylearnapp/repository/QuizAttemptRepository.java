@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
     List<QuizAttempt> findByUserId(Long userId);
+    List<QuizAttempt> findByUserClerkId(String clerkId);
     List<QuizAttempt> findByQuizId(Long quizId);
     List<QuizAttempt> findByUserIdAndQuizId(Long userId, Long quizId);
 
