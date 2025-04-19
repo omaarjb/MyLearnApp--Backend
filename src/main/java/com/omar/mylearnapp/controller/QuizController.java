@@ -4,6 +4,7 @@ import com.omar.mylearnapp.dto.QuizDTO;
 import com.omar.mylearnapp.model.Quiz;
 import com.omar.mylearnapp.model.User;
 import com.omar.mylearnapp.model.response.QuizResponse;
+import com.omar.mylearnapp.service.GeminiService;
 import com.omar.mylearnapp.service.QuizService;
 import com.omar.mylearnapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class QuizController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private GeminiService geminiService;
+
     @GetMapping
     public ResponseEntity<List<QuizDTO>> getAllQuizzes() {
         List<Quiz> quizzes = quizService.getAllQuizzes();
@@ -39,10 +43,10 @@ public class QuizController {
     @PostMapping("/complete/professor/{professorId}")
     public ResponseEntity<?>
     createCompleteQuizWithProfessor(
-            @PathVariable Long professorId,
+            @PathVariable String professorId,
             @RequestBody Quiz quiz) {
 
-        Optional<User> professor = userService.findById(professorId);
+        Optional<User> professor = userService.findByClerkId(professorId);
         if (!professor.isPresent()) {
             return ResponseEntity.status(404).body(Map.of("error", "Professor not found"));
         }
@@ -114,5 +118,43 @@ public class QuizController {
 
         quizService.deleteQuiz(id);
         return ResponseEntity.ok(Map.of("message", "Quiz deleted successfully"));
+    }
+
+
+    @PostMapping("/generate-with-ai")
+    public ResponseEntity<?> generateQuizWithAI(@RequestBody Map<String, Object> request, @RequestParam String professorId) {
+        try {
+            // Extract parameters from request
+            String sourceType = (String) request.get("sourceType");
+            String content = (String) request.get("content");
+            int numQuestions = (int) request.get("numQuestions");
+            String difficulty = (String) request.get("difficulty");
+            String category = (String) request.getOrDefault("category", "Programmation");
+
+            // Validate professor
+            Optional<User> professor = userService.findByClerkId(professorId);
+            if (!professor.isPresent()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Professor not found"));
+            }
+
+            if (!"professeur".equalsIgnoreCase(professor.get().getRole())) {
+                return ResponseEntity.status(403).body(Map.of("error", "User is not a professor"));
+            }
+
+            // Generate quiz using Gemini
+            Quiz generatedQuiz = geminiService.generateQuiz(sourceType, content, numQuestions, difficulty, category);
+
+            // Set professor
+            generatedQuiz.setProfessor(professor.get());
+
+            // Return the generated quiz (without saving it yet)
+            return ResponseEntity.ok(QuizResponse.fromQuiz(generatedQuiz));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Failed to generate quiz",
+                    "message", e.getMessage()
+            ));
+        }
     }
 }
