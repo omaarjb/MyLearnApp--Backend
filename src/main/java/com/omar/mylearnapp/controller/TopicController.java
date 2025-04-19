@@ -46,4 +46,20 @@ public class TopicController {
     }
 
 
+    @PostMapping("/bulk")
+    public ResponseEntity<List<Topic>> createMultipleTopics(@RequestBody List<Topic> topics){
+        List<Topic> existingTopics = topics.stream()
+                .filter(topic -> topicService.existsByName(topic.getName()))
+                .collect(Collectors.toList());
+
+        // If there are existing topics with the same name, return a Conflict status
+        if (!existingTopics.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(existingTopics);
+        }
+
+        List<Topic> createdTopics = topicService.createMultipleTopics(topics);
+        return new ResponseEntity<>(createdTopics, HttpStatus.CREATED);
+    }
+
+
 }

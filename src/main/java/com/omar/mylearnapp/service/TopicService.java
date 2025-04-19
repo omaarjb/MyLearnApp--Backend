@@ -60,4 +60,9 @@ public class TopicService {
     public boolean existsByName(String name) {
         return topicRepository.findByName(name).isPresent();
     }
+
+    @Transactional
+    public List<Topic> createMultipleTopics(List<Topic> topics) {
+        return topicRepository.saveAll(topics);
+    }
 }
