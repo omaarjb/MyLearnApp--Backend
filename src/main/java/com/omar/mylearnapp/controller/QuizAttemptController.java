@@ -63,6 +63,36 @@ public class QuizAttemptController {
         }
     }
 
+    @PostMapping("/{attemptId}/auto-submit")
+    public ResponseEntity<?> autoSubmitExpiredAttempt(@PathVariable Long attemptId) {
+        try {
+            QuizAttempt attempt = quizAttemptService.autoSubmitExpiredAttempt(attemptId);
+
+            Map<String, Object> result = Map.of(
+                    "attemptId", attempt.getId(),
+                    "score", attempt.getScore(),
+                    "totalQuestions", attempt.getTotalQuestions(),
+                    "timeTakenSeconds", attempt.getTimeTakenSeconds(),
+                    "correctAnswers", 0
+            );
+
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+    @GetMapping("/{attemptId}/check-time")
+    public ResponseEntity<?> checkTimeLimit(@PathVariable Long attemptId) {
+        try {
+            boolean timeExceeded = quizAttemptService.hasTimeLimitExceeded(attemptId);
+            return ResponseEntity.ok(Map.of("timeExceeded", timeExceeded));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/user/{clerkId}")
     public ResponseEntity<List<QuizAttemptDTO>> getUserAttempts(@PathVariable String clerkId) {
         List<QuizAttempt> attempts = quizAttemptService.getUserAttempts(clerkId);
