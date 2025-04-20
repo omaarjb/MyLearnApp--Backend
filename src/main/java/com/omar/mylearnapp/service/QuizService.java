@@ -6,8 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class QuizService {
@@ -16,22 +15,41 @@ public class QuizService {
     private QuizRepository quizRepository;
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private TopicRepository topicRepository;
 
     @Autowired
-    private TopicRepository topicRepository;
+    private QuestionRepository questionRepository;
 
     @Autowired
     private OptionRepository optionRepository;
 
-    @Autowired
-    private UserRepository  userRepository;
+    public List<Quiz> getAllQuizzes() {
+        return quizRepository.findAll();
+    }
 
-    @Autowired
-    private QuizAttemptRepository quizAttemptRepository;
+    public Optional<Quiz> getQuizById(Long id) {
+        return quizRepository.findById(id);
+    }
 
-    @Autowired
-    private ResponseRepository responseRepository;
+
+
+    public List<Quiz> getQuizzesByTopic(Long topicId) {
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new RuntimeException("Topic not found with id: " + topicId));
+        return quizRepository.findByTopicId(topic.getId());
+    }
+
+    public List<Quiz> getQuizzesByDifficulty(String difficulty) {
+        return quizRepository.findByDifficulty(difficulty);
+    }
+
+    public List<Quiz> getQuizzesByCategory(String category) {
+        return quizRepository.findByCategory(category);
+    }
+
+    public List<Quiz> getQuizzesByProfessor(Long professorId) {
+        return quizRepository.findByProfessorId(professorId);
+    }
 
     @Transactional
     public Quiz createQuiz(Quiz quiz) {
@@ -40,23 +58,20 @@ public class QuizService {
 
     @Transactional
     public Quiz createCompleteQuiz(Quiz quiz) {
-        // Validate topic
         if (quiz.getTopic() != null && quiz.getTopic().getId() != null) {
             Topic topic = topicRepository.findById(quiz.getTopic().getId())
                     .orElseThrow(() -> new RuntimeException("Topic not found with id: " + quiz.getTopic().getId()));
             quiz.setTopic(topic);
         }
 
-        // Save the quiz first
         Quiz savedQuiz = quizRepository.save(quiz);
 
-        // Save questions and options
-        if (quiz.getQuestions() != null && !quiz.getQuestions().isEmpty()) {
+        if (quiz.getQuestions() != null) {
             for (Question question : quiz.getQuestions()) {
                 question.setQuiz(savedQuiz);
                 Question savedQuestion = questionRepository.save(question);
 
-                if (question.getOptions() != null && !question.getOptions().isEmpty()) {
+                if (question.getOptions() != null) {
                     for (Option option : question.getOptions()) {
                         option.setQuestion(savedQuestion);
                         optionRepository.save(option);
@@ -65,20 +80,7 @@ public class QuizService {
             }
         }
 
-        // Refresh the quiz to get all the relationships
         return quizRepository.findById(savedQuiz.getId()).orElse(savedQuiz);
-    }
-
-    public List<Quiz> getAllQuizzes() {
-        return quizRepository.findAll();
-    }
-
-    public List<Quiz> getQuizzesByCategory(String category) {
-        return quizRepository.findByCategory(category);
-    }
-
-    public Optional<Quiz> getQuizById(Long id) {
-        return quizRepository.findById(id);
     }
 
     @Transactional
@@ -102,24 +104,14 @@ public class QuizService {
 
         return quizRepository.save(quiz);
     }
+    public List<Quiz> getQuizzesByTopic(String topicName) {
+        return quizRepository.findByTopic_Name(topicName);
+    }
+
 
     public void deleteQuiz(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Quiz not found with id: " + id));
         quizRepository.delete(quiz);
-    }
-
-    public List<Quiz> getQuizzesByTopic(Long topicId) {
-        Topic topic = topicRepository.findById(topicId)
-                .orElseThrow(() -> new RuntimeException("Topic not found with id: " + topicId));
-        return quizRepository.findByTopicId(topic.getId());
-    }
-
-    public List<Quiz> getQuizzesByDifficulty(String difficulty) {
-        return quizRepository.findByDifficulty(difficulty);
-    }
-
-    public List<Quiz> getQuizzesByProfessor(Long professorId) {
-        return quizRepository.findByProfessorId(professorId);
     }
 }
