@@ -148,7 +148,7 @@ public class QuizController {
             generatedQuiz.setProfessor(professor.get());
 
             // Return the generated quiz (without saving it yet)
-            return ResponseEntity.ok(QuizResponse.fromQuiz(generatedQuiz));
+            return ResponseEntity.ok(QuizDTO.fromQuiz(generatedQuiz));
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(

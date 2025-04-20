@@ -43,6 +43,9 @@ public class GeminiService {
 
                 The quiz should be at %s level.
                 For each question, provide 4 options with exactly one correct answer.
+                The first option shouldn't always be the correct one.
+                Make sure the select the correct option.
+                The quiz should be in french.
                 Format the response as a JSON object like this:
                 {
                   "title": "Quiz title",
