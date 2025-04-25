@@ -39,6 +39,14 @@ public class QuizController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/topicn/{name}")
+    public ResponseEntity<List<QuizDTO>> getQuizzesByTopicName(@PathVariable String name) {
+        List<QuizDTO> response = quizService.getQuizzesByTopic(name).stream()
+                .map(QuizDTO::fromQuiz)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/complete/professor/{professorId}")
     public ResponseEntity<?>
