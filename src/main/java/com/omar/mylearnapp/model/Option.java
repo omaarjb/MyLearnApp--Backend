@@ -1,8 +1,9 @@
+// src/main/java/com/omar/mylearnapp/model/Option.java
 package com.omar.mylearnapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-
 import java.util.List;
 
 @Entity
@@ -24,8 +25,7 @@ public class Option {
     @JsonIgnore
     private List<Response> responses;
 
-    public Option() {
-    }
+    public Option() { }
 
     public Option(String text, boolean isCorrect, Question question) {
         this.text = text;
@@ -36,7 +36,6 @@ public class Option {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -44,7 +43,6 @@ public class Option {
     public String getText() {
         return text;
     }
-
     public void setText(String text) {
         this.text = text;
     }
@@ -53,6 +51,13 @@ public class Option {
         return isCorrect;
     }
 
+   
+    @JsonProperty("correct")
+    public void setCorrect(boolean correct) {
+        this.isCorrect = correct;
+    }
+
+    // (optional) keep this for JPA or other internal use
     public void setIsCorrect(boolean isCorrect) {
         this.isCorrect = isCorrect;
     }
@@ -60,7 +65,6 @@ public class Option {
     public Question getQuestion() {
         return question;
     }
-
     public void setQuestion(Question question) {
         this.question = question;
     }
@@ -68,7 +72,6 @@ public class Option {
     public List<Response> getResponses() {
         return responses;
     }
-
     public void setResponses(List<Response> responses) {
         this.responses = responses;
     }

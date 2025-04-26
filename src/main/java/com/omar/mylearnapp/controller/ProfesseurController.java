@@ -1,8 +1,10 @@
 package com.omar.mylearnapp.controller;
 
+import com.omar.mylearnapp.dto.QuizDTO;
 import com.omar.mylearnapp.model.Question;
 import com.omar.mylearnapp.model.Quiz;
 import com.omar.mylearnapp.model.User;
+import com.omar.mylearnapp.model.response.QuizResponse;
 import com.omar.mylearnapp.service.QuizService;
 import com.omar.mylearnapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/professeur")
@@ -42,7 +45,11 @@ public class ProfesseurController {
         }
 
         List<Quiz> quizzes = quizService.getQuizzesByProfessor(professeur.getId());
-        return ResponseEntity.ok(quizzes);
+        // Use the DTO to avoid infinite recursion
+        List<QuizDTO> quizDTOs = quizzes.stream()
+                .map(QuizDTO::fromQuiz)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(quizDTOs);
     }
 
     /**
@@ -65,7 +72,8 @@ public class ProfesseurController {
 
         try {
             Quiz createdQuiz = quizService.createQuizForProfessor(quiz, professeur.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdQuiz);
+            // Use QuizResponse to avoid infinite recursion
+            return ResponseEntity.status(HttpStatus.CREATED).body(QuizResponse.fromQuiz(createdQuiz));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -90,7 +98,8 @@ public class ProfesseurController {
 
         try {
             Quiz updatedQuiz = quizService.updateProfessorQuiz(quizId, quiz, professeur.getId());
-            return ResponseEntity.ok(updatedQuiz);
+            // Use QuizResponse to avoid infinite recursion
+            return ResponseEntity.ok(QuizResponse.fromQuiz(updatedQuiz));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
@@ -222,6 +231,7 @@ public class ProfesseurController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ce quiz ne vous appartient pas");
         }
 
-        return ResponseEntity.ok(quiz);
+        // Use QuizDTO to avoid infinite recursion
+        return ResponseEntity.ok(QuizDTO.fromQuiz(quiz));
     }
 }

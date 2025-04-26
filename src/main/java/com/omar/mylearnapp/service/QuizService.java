@@ -220,6 +220,21 @@ public class QuizService {
 
         question.setText(questionDetails.getText());
 
+
+
+        // Debug: Print incoming options
+        System.out.println("Received question details: " + questionDetails);
+        System.out.println("Received options count: " +
+                (questionDetails.getOptions() != null ? questionDetails.getOptions().size() : 0));
+
+        if (questionDetails.getOptions() != null) {
+            for (int i = 0; i < questionDetails.getOptions().size(); i++) {
+                Option option = questionDetails.getOptions().get(i);
+                System.out.println("Option " + (i+1) + ": Text = " + option.getText() +
+                        ", Correct = " + option.isCorrect());
+            }
+        }
+
         // Mettre à jour les options si fournies
         if (questionDetails.getOptions() != null && !questionDetails.getOptions().isEmpty()) {
             // Supprimer les options existantes
@@ -230,12 +245,22 @@ public class QuizService {
             // Ajouter les nouvelles options
             for (Option option : questionDetails.getOptions()) {
                 option.setQuestion(question);
+                System.out.println("Saving option: " + option.getText() + ", correct = " + option.isCorrect());
                 optionRepository.save(option);
             }
             question.setOptions(questionDetails.getOptions());
         }
 
-        return questionRepository.save(question);
+        // Final state debug
+        Question savedQuestion = questionRepository.save(question);
+        System.out.println("Saved question options: ");
+        if (savedQuestion.getOptions() != null) {
+            for (Option option : savedQuestion.getOptions()) {
+                System.out.println("Saved option: " + option.getText() + ", correct = " + option.isCorrect());
+            }
+        }
+
+        return savedQuestion;
     }
 
     /**
