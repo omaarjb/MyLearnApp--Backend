@@ -51,7 +51,7 @@ public class Option {
         return isCorrect;
     }
 
-   
+
     @JsonProperty("correct")
     public void setCorrect(boolean correct) {
         this.isCorrect = correct;
