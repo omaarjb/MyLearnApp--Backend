@@ -45,10 +45,15 @@ public class ProfesseurController {
         }
 
         List<Quiz> quizzes = quizService.getQuizzesByProfessor(professeur.getId());
-        // Use the DTO to avoid infinite recursion
+
+        // Ensure each quiz has its topic properly loaded before converting to DTO
         List<QuizDTO> quizDTOs = quizzes.stream()
-                .map(QuizDTO::fromQuiz)
+                .map(quiz -> {
+                    // Make sure topic is not null in the DTO if it exists in the entity
+                    return QuizDTO.fromQuiz(quiz);
+                })
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(quizDTOs);
     }
 
@@ -72,8 +77,8 @@ public class ProfesseurController {
 
         try {
             Quiz createdQuiz = quizService.createQuizForProfessor(quiz, professeur.getId());
-            // Use QuizResponse to avoid infinite recursion
-            return ResponseEntity.status(HttpStatus.CREATED).body(QuizResponse.fromQuiz(createdQuiz));
+            // Use QuizDTO instead of QuizResponse to include topic
+            return ResponseEntity.status(HttpStatus.CREATED).body(QuizDTO.fromQuiz(createdQuiz));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -98,8 +103,8 @@ public class ProfesseurController {
 
         try {
             Quiz updatedQuiz = quizService.updateProfessorQuiz(quizId, quiz, professeur.getId());
-            // Use QuizResponse to avoid infinite recursion
-            return ResponseEntity.ok(QuizResponse.fromQuiz(updatedQuiz));
+            // Use QuizDTO instead of QuizResponse to include topic
+            return ResponseEntity.ok(QuizDTO.fromQuiz(updatedQuiz));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }

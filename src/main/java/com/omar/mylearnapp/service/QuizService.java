@@ -29,6 +29,9 @@ public class QuizService {
     @Autowired
     private ResponseRepository responseRepository;
 
+    @Autowired
+    private QuizAttemptRepository quizAttemptRepository; // Add this repository
+
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
     }
@@ -55,8 +58,21 @@ public class QuizService {
         return quizRepository.findByCategory(category);
     }
 
+
     public List<Quiz> getQuizzesByProfessor(Long professorId) {
-        return quizRepository.findByProfessorId(professorId);
+        List<Quiz> quizzes = quizRepository.findByProfessorId(professorId);
+
+        // Ensure topics are loaded for each quiz
+        quizzes.forEach(quiz -> {
+            if (quiz.getTopic() != null) {
+                // Force loading the topic's properties to make sure they're available
+                Topic topic = quiz.getTopic();
+                topic.getName(); // This forces Hibernate to load the topic
+                topic.getDescription();
+            }
+        });
+
+        return quizzes;
     }
 
     @Transactional
@@ -113,10 +129,68 @@ public class QuizService {
         return quizRepository.save(quiz);
     }
 
+    /**
+     * Delete a quiz with proper handling of all dependencies
+     */
+    @Transactional
     public void deleteQuiz(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Quiz not found with id: " + id));
+
+        // Delete all quiz attempts and associated responses first
+        deleteAllQuizAttempts(quiz.getId());
+
+        // Delete all questions and their dependencies
+        if (quiz.getQuestions() != null) {
+            for (Question question : quiz.getQuestions()) {
+                deleteQuestionWithDependencies(question);
+            }
+        }
+
+        // Now safely delete the quiz
         quizRepository.delete(quiz);
+    }
+
+    /**
+     * Helper method to delete all attempts for a quiz
+     */
+    @Transactional
+    protected void deleteAllQuizAttempts(Long quizId) {
+        // Find all quiz attempts for this quiz
+        List<QuizAttempt> attempts = quizAttemptRepository.findByQuizId(quizId);
+
+        for (QuizAttempt attempt : attempts) {
+            // Delete all responses for this attempt
+            List<Response> responses = responseRepository.findByQuizAttemptId(attempt.getId());
+            for (Response response : responses) {
+                responseRepository.delete(response);
+            }
+
+            // Delete the attempt itself
+            quizAttemptRepository.delete(attempt);
+        }
+    }
+
+    /**
+     * Helper method to delete a question with all its dependencies
+     */
+    @Transactional
+    protected void deleteQuestionWithDependencies(Question question) {
+        // Delete all responses related to this question
+        List<Response> responses = responseRepository.findByQuestionId(question.getId());
+        for (Response response : responses) {
+            responseRepository.delete(response);
+        }
+
+        // Delete all options for this question
+        if (question.getOptions() != null) {
+            for (Option option : question.getOptions()) {
+                optionRepository.delete(option);
+            }
+        }
+
+        // Delete the question itself
+        questionRepository.delete(question);
     }
 
     /**
@@ -165,7 +239,8 @@ public class QuizService {
             throw new RuntimeException("Le professeur avec l'id " + professorId + " n'est pas le propriétaire de ce quiz");
         }
 
-        quizRepository.delete(quiz);
+        // Use the improved delete method that handles dependencies
+        deleteQuiz(quizId);
     }
 
     /**
@@ -212,22 +287,20 @@ public class QuizService {
 
         question.setText(questionDetails.getText());
 
-        // Debug: Print incoming options
-        System.out.println("Received question details: " + questionDetails);
-        System.out.println("Received options count: " +
-                (questionDetails.getOptions() != null ? questionDetails.getOptions().size() : 0));
-
-        if (questionDetails.getOptions() != null) {
-            for (int i = 0; i < questionDetails.getOptions().size(); i++) {
-                Option option = questionDetails.getOptions().get(i);
-                System.out.println("Option " + (i+1) + ": Text = " + option.getText() +
-                        ", Correct = " + option.isCorrect());
-            }
-        }
-
         // Mettre à jour les options si fournies
         if (questionDetails.getOptions() != null && !questionDetails.getOptions().isEmpty()) {
-            // Supprimer les options existantes
+            // Delete existing responses for the options before deleting options
+            for (Option option : question.getOptions()) {
+                List<Response> responses = responseRepository.findAll().stream()
+                        .filter(r -> r.getSelectedOption() != null && r.getSelectedOption().getId().equals(option.getId()))
+                        .toList();
+
+                for (Response response : responses) {
+                    responseRepository.delete(response);
+                }
+            }
+
+            // Now safely delete the options
             for (Option option : question.getOptions()) {
                 optionRepository.delete(option);
             }
@@ -235,22 +308,12 @@ public class QuizService {
             // Ajouter les nouvelles options
             for (Option option : questionDetails.getOptions()) {
                 option.setQuestion(question);
-                System.out.println("Saving option: " + option.getText() + ", correct = " + option.isCorrect());
                 optionRepository.save(option);
             }
             question.setOptions(questionDetails.getOptions());
         }
 
-        // Final state debug
-        Question savedQuestion = questionRepository.save(question);
-        System.out.println("Saved question options: ");
-        if (savedQuestion.getOptions() != null) {
-            for (Option option : savedQuestion.getOptions()) {
-                System.out.println("Saved option: " + option.getText() + ", correct = " + option.isCorrect());
-            }
-        }
-
-        return savedQuestion;
+        return questionRepository.save(question);
     }
 
     /**
@@ -268,20 +331,6 @@ public class QuizService {
             throw new RuntimeException("Le professeur avec l'id " + professorId + " n'est pas le propriétaire de ce quiz");
         }
 
-        // Supprimer d'abord toutes les options
-        if (question.getOptions() != null) {
-            for (Option option : question.getOptions()) {
-                optionRepository.delete(option);
-            }
-        }
-
-        // Supprimer toutes les réponses à cette question
-        if (question.getResponses() != null) {
-            for (Response response : question.getResponses()) {
-                responseRepository.delete(response);
-            }
-        }
-
-        questionRepository.delete(question);
+        deleteQuestionWithDependencies(question);
     }
 }

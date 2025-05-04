@@ -17,6 +17,7 @@ public class QuizDTO {
     private int timeLimit;
     private List<Question> questions;
     private User professor;
+    private TopicDTO topic;
 
     public QuizDTO() {
     }
@@ -100,7 +101,15 @@ public class QuizDTO {
     public void setProfessor(User professor) {
         this.professor = professor;
     }
+    // Add getter for topic
+    public TopicDTO getTopic() {
+        return topic;
+    }
 
+
+    public void setTopic(TopicDTO topic) {
+        this.topic = topic;
+    }
     public static QuizDTO fromQuiz(Quiz quiz) {
         QuizDTO dto = new QuizDTO();
         dto.setId(quiz.getId());
@@ -113,6 +122,12 @@ public class QuizDTO {
         dto.setTimeLimit(quiz.getTimeLimit());
         dto.setQuestions(quiz.getQuestions());
         dto.setProfessor(quiz.getProfessor());
+
+        // Set the topic if it exists
+        if (quiz.getTopic() != null) {
+            dto.setTopic(TopicDTO.fromTopic(quiz.getTopic()));
+        }
+
         return dto;
     }
 

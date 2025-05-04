@@ -24,6 +24,6 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
 
     @Query("SELECT AVG(qa.timeTakenSeconds) FROM QuizAttempt qa WHERE qa.quiz.id = :quizId")
     Double getAverageTimeByQuizId(Long quizId);
-
     List<QuizAttempt> findByStartTimeBetween(LocalDateTime start, LocalDateTime end);
+
 }
